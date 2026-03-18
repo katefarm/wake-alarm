@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#00e5ff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="WAKE">
+<title>WAKE</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--sf:#13131a;--sf2:#1c1c28;--ac:#00e5ff;--ac2:#ff6b35;--ac3:#a78bfa;--tx:#e8e8f0;--mu:#6b6b80;--bd:#2a2a3a;--ok:#00e5a0;--ng:#ff4757;--glow:0 0 20px rgba(0,229,255,.3);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--tx);font-family:'Noto Sans KR',sans-serif;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+.wrap{position:relative;z-index:1;max-width:920px;margin:0 auto;padding:24px 18px;}
+
+/* HEADER */
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;padding-bottom:18px;border-bottom:1px solid var(--bd);}
+.logo{font-family:'Space Mono',monospace;font-size:26px;font-weight:700;color:var(--ac);text-shadow:var(--glow);letter-spacing:4px;}
+.logo span{color:var(--ac2);}
+#clock{font-family:'Space Mono',monospace;font-size:20px;letter-spacing:2px;}
+.spk-badge{display:none;align-items:center;gap:5px;background:var(--sf2);border:1px solid var(--ok);padding:5px 11px;border-radius:20px;font-size:11px;color:var(--ok);font-family:'Space Mono',monospace;}
+.spk-badge.show{display:flex;}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--ok);animation:blink .8s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* WIDGET */
+#widget{background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:18px 22px;margin-bottom:22px;display:flex;align-items:center;gap:18px;position:relative;flex-wrap:wrap;}
+#widget::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--ac),var(--ac3),var(--ac2));border-radius:16px 16px 0 0;}
+.wi{font-size:44px;line-height:1;}
+.ws h3{font-size:11px;color:var(--mu);text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;}
+.wm{display:flex;align-items:baseline;gap:10px;}
+.wt{font-family:'Space Mono',monospace;font-size:32px;color:var(--ac);}
+.wr{display:flex;gap:14px;margin-top:6px;flex-wrap:wrap;}
+.wri{font-size:11px;color:var(--mu);}
+.wri span{color:var(--tx);}
+.wdiv{width:1px;background:var(--bd);align-self:stretch;margin:0 4px;flex-shrink:0;}
+.aqi{font-family:'Space Mono',monospace;font-size:30px;font-weight:700;padding:4px 10px;border-radius:8px;background:var(--sf2);}
+.aqi.good{background:#00c65320;color:#00c653;}
+.aqi.moderate{background:#f0b42920;color:#f0b429;}
+.aqi.sensitive{background:#ff6b3520;color:#ff6b35;}
+.aqi.unhealthy{background:#ff475720;color:#ff4757;}
+.aqi.very-unhealthy{background:#8b00ff30;color:#b44fff;}
+.aqi.hazardous{background:#7b000030;color:#ff2200;}
+.aqi-lbl{font-size:14px;font-weight:600;}
+.wbtns{display:flex;flex-direction:column;gap:7px;margin-left:auto;flex-shrink:0;}
+.btn-naver{background:#03C75A;border:none;color:#fff;padding:7px 13px;border-radius:7px;cursor:pointer;font-size:11px;font-family:'Space Mono',monospace;font-weight:700;white-space:nowrap;}
+.btn-ref{background:transparent;border:1px solid var(--bd);color:var(--mu);padding:7px 13px;border-radius:7px;cursor:pointer;font-size:11px;font-family:'Space Mono',monospace;}
+.btn-ref:hover{border-color:var(--ac);color:var(--ac);}
+.btn-spkw{background:var(--ac);border:none;color:var(--bg);padding:7px 13px;border-radius:7px;cursor:pointer;font-size:11px;font-family:'Space Mono',monospace;font-weight:700;}
+
+/* FORM */
+.fbox{background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:22px;margin-bottom:22px;}
+.fbox-top{height:2px;background:linear-gradient(90deg,var(--ac2),var(--ac));border-radius:16px 16px 0 0;margin:-22px -22px 22px;}
+.fbox h2{font-size:11px;color:var(--mu);text-transform:uppercase;letter-spacing:2px;margin-bottom:16px;font-family:'Space Mono',monospace;}
+.frow{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+.fg{display:flex;flex-direction:column;gap:5px;}
+.fg label{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:1px;}
+.f1{flex:1;min-width:180px;}
+select,textarea{background:var(--sf2);border:1px solid var(--bd);color:var(--tx);padding:9px 12px;border-radius:8px;font-family:'Noto Sans KR',sans-serif;font-size:14px;outline:none;width:100%;}
+select:focus,textarea:focus{border-color:var(--ac);}
+select option{background:var(--sf2);}
+textarea{resize:vertical;min-height:80px;}
+input[type=number]{background:var(--sf2);border:1px solid var(--bd);color:var(--ac);padding:8px 4px;border-radius:8px;font-family:'Space Mono',monospace;font-size:22px;font-weight:700;text-align:center;outline:none;width:70px;}
+input[type=number]:focus{border-color:var(--ac);}
+.days-wrap{display:flex;gap:5px;flex-wrap:wrap;}
+.day-btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--bd);background:var(--sf2);color:var(--mu);font-size:12px;cursor:pointer;font-family:'Space Mono',monospace;}
+.day-btn.on{background:var(--ac3);border-color:var(--ac3);color:#fff;font-weight:700;}
+.btn-add{background:var(--ac);color:var(--bg);border:none;padding:11px 26px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Space Mono',monospace;letter-spacing:1px;}
+.btn-add:hover{box-shadow:var(--glow);}
+.btn-voice{padding:8px 14px;border-radius:8px;border:1px solid var(--bd);cursor:pointer;font-size:12px;font-family:'Space Mono',monospace;background:var(--sf2);color:var(--mu);}
+.btn-voice.active-m{background:var(--ac);color:var(--bg);}
+.btn-voice.active-f{background:var(--ac3);color:#fff;}
+
+/* TABS */
+.tabs{display:flex;gap:4px;margin-bottom:18px;background:var(--sf);padding:4px;border-radius:12px;}
+.tab{flex:1;padding:8px;text-align:center;cursor:pointer;border-radius:8px;font-size:12px;color:var(--mu);font-family:'Space Mono',monospace;}
+.tab.on{background:var(--ac);color:var(--bg);font-weight:700;}
+.sec-tit{font-family:'Space Mono',monospace;font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:3px;margin-bottom:12px;}
+
+/* CARDS */
+.alist{display:flex;flex-direction:column;gap:10px;}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:15px 18px;display:flex;align-items:center;gap:14px;position:relative;animation:sli .3s ease;}
+@keyframes sli{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+.card:hover{border-color:var(--ac);}
+.card.off{opacity:.4;}
+.card.ring{border-color:var(--ac2)!important;animation:pul .5s infinite alternate;}
+@keyframes pul{from{box-shadow:0 0 10px rgba(255,107,53,.3);}to{box-shadow:0 0 30px rgba(255,107,53,.8);}}
+.card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--ac3);border-radius:3px 0 0 3px;}
+.ctime{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:var(--ac);min-width:70px;text-shadow:var(--glow);}
+.cbody{flex:1;}
+.ctit{font-size:14px;font-weight:500;margin-bottom:3px;}
+.card.off .ctit{text-decoration:line-through;opacity:.6;}
+.cmeta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.crep{font-size:10px;color:var(--ac3);}
+.cnote{font-size:11px;color:var(--mu);margin-top:3px;}
+.cacts{display:flex;gap:6px;align-items:center;}
+.bi{background:var(--sf2);border:1px solid var(--bd);color:var(--mu);width:32px;height:32px;border-radius:7px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.bi:hover{border-color:var(--ac);color:var(--ac);}
+.bi.del:hover{border-color:var(--ng);color:var(--ng);}
+.bi.spk:hover{border-color:var(--ok);color:var(--ok);}
+.tog{position:relative;width:40px;height:22px;cursor:pointer;display:block;}
+.tog input{opacity:0;width:0;height:0;position:absolute;}
+.sli2{position:absolute;inset:0;background:var(--sf2);border-radius:22px;border:1px solid var(--bd);transition:.2s;}
+.sli2::before{content:'';position:absolute;width:16px;height:16px;left:2px;top:2px;background:var(--mu);border-radius:50%;transition:.2s;}
+.tog input:checked+.sli2{background:var(--ac);border-color:var(--ac);}
+.tog input:checked+.sli2::before{transform:translateX(18px);background:var(--bg);}
+
+/* MODAL */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:999;backdrop-filter:blur(4px);}
+.ov.show{display:flex;}
+.modal{background:var(--sf);border:1px solid var(--ac2);border-radius:20px;padding:38px;text-align:center;max-width:380px;width:90%;box-shadow:0 0 60px rgba(255,107,53,.4);}
+.mico{font-size:56px;margin-bottom:14px;display:inline-block;animation:rng .5s infinite alternate;}
+@keyframes rng{from{transform:rotate(-10deg);}to{transform:rotate(10deg);}}
+.modal h2{font-size:22px;color:var(--ac2);margin-bottom:7px;font-family:'Space Mono',monospace;}
+.mtit{font-size:17px;margin-bottom:5px;}
+.mnote{font-size:13px;color:var(--mu);margin-bottom:22px;}
+.mbtns{display:flex;gap:10px;justify-content:center;}
+.bok{background:var(--ac2);border:none;color:#fff;padding:11px 26px;border-radius:9px;cursor:pointer;font-size:14px;font-weight:700;font-family:'Space Mono',monospace;}
+.bsnz{background:var(--sf2);border:1px solid var(--bd);color:var(--tx);padding:11px 26px;border-radius:9px;cursor:pointer;font-size:14px;font-family:'Space Mono',monospace;}
+
+/* TOAST */
+#toast{position:fixed;bottom:22px;right:22px;background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:11px 18px;font-size:12px;color:var(--tx);transform:translateY(80px);opacity:0;transition:all .3s;z-index:9999;max-width:280px;}
+#toast.show{transform:translateY(0);opacity:1;}
+.empty{text-align:center;padding:50px 20px;color:var(--mu);font-size:13px;border:1px dashed var(--bd);border-radius:12px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">WA<span>KE</span></div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="spk-badge" id="spkBadge"><div class="dot"></div>읽는 중...</div>
+      <div id="clock">--:--:--</div>
+    </div>
+  </header>
+
+  <!-- WIDGET -->
+  <div id="widget">
+    <div class="wi" id="wIcon">⏳</div>
+    <div class="ws">
+      <h3>날씨 · <span id="wCity">--</span></h3>
+      <div class="wm">
+        <div class="wt" id="wTemp">--°</div>
+        <div id="wDesc" style="font-size:15px;">불러오는 중...</div>
+      </div>
+      <div class="wr">
+        <div class="wri">습도 <span id="wHum">--%</span></div>
+        <div class="wri">체감 <span id="wFeel">--°</span></div>
+        <div class="wri">바람 <span id="wWind">--m/s</span></div>
+      </div>
+    </div>
+    <div class="wdiv"></div>
+    <div class="ws">
+      <h3>미세먼지 · WAQI</h3>
+      <div class="wm" style="gap:10px;align-items:center;">
+        <div class="aqi" id="aqiNum">--</div>
+        <div class="aqi-lbl" id="aqiLbl">불러오는 중...</div>
+      </div>
+      <div class="wr">
+        <div class="wri">PM2.5 <span id="aPm25">--</span></div>
+        <div class="wri">PM10 <span id="aPm10">--</span></div>
+        <div class="wri">O₃ <span id="aO3">--</span></div>
+        <div class="wri">NO₂ <span id="aNO2">--</span></div>
+      </div>
+    </div>
+    <div class="wbtns">
+      <button class="btn-naver" id="btnNaver">🌐 네이버 날씨</button>
+      <button class="btn-ref" id="btnRef">↻ 새로고침</button>
+      <button class="btn-spkw" id="btnSpkW">🔊 읽어주기</button>
+    </div>
+  </div>
+
+  <!-- FORM -->
+  <div class="fbox">
+    <div class="fbox-top"></div>
+    <h2>+ 새 알람 추가</h2>
+    <div class="frow">
+      <div class="fg f1">
+        <label>메모 (알람 시 음성으로 읽어줍니다)</label>
+        <textarea id="iNote" placeholder="더 즐거운 하루를 위한 알람 설정하기"></textarea>
+      </div>
+      <div class="fg">
+        <label>알람 시간 (24시간)</label>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <input type="number" id="iHour" min="0" max="23" value="8">
+          <span style="font-family:'Space Mono',monospace;font-size:26px;color:var(--ac);font-weight:700;">:</span>
+          <input type="number" id="iMin" min="0" max="59" value="0">
+        </div>
+      </div>
+    </div>
+    <div class="frow">
+      <div class="fg">
+        <label>반복</label>
+        <select id="iRepeat">
+          <option value="none">반복 없음 (1회)</option>
+          <option value="daily">매일</option>
+          <option value="weekday">평일 (월~금)</option>
+          <option value="weekend">주말 (토~일)</option>
+          <option value="custom">요일 직접 선택</option>
+        </select>
+      </div>
+      <div class="fg" id="dayWrap" style="display:none;">
+        <label>요일 선택</label>
+        <div class="days-wrap">
+          <button type="button" class="day-btn" data-d="0">일</button>
+          <button type="button" class="day-btn" data-d="1">월</button>
+          <button type="button" class="day-btn" data-d="2">화</button>
+          <button type="button" class="day-btn" data-d="3">수</button>
+          <button type="button" class="day-btn" data-d="4">목</button>
+          <button type="button" class="day-btn" data-d="5">금</button>
+          <button type="button" class="day-btn" data-d="6">토</button>
+        </div>
+      </div>
+    </div>
+    <div class="frow" style="align-items:flex-end;">
+      <div style="margin-left:auto;">
+        <button type="button" class="btn-add" id="btnAdd">+ ADD ALARM</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab on" id="tab-all">전체</div>
+    <div class="tab" id="tab-on">활성</div>
+    <div class="tab" id="tab-done">완료</div>
+  </div>
+  <div class="sec-tit" id="secTit">전체 알람</div>
+  <div class="alist" id="alist"></div>
+
+  <!-- FOOTER -->
+  <div style="text-align:center;padding:28px 0 16px;font-size:12px;color:var(--mu);font-family:'Space Mono',monospace;letter-spacing:1px;border-top:1px solid var(--bd);margin-top:32px;">
+    KATE FARM MADE &nbsp;|&nbsp; +82 1800-4801 &nbsp;&nbsp; <a href="https://www.katefarm.com" target="_blank" style="color:var(--mu);text-decoration:none;">www.katefarm.com</a>
+  </div>
+
+</div>
+
+<!-- MODAL -->
+<div class="ov" id="modal">
+  <div class="modal">
+    <div class="mico">🔔</div>
+    <h2>알람!</h2>
+    <div class="mtit" id="mTit"></div>
+    <div class="mnote" id="mNote"></div>
+    <div class="mbtns">
+      <button class="bsnz" id="btnSnz">😴 5분 후</button>
+      <button class="bok" id="btnDis">✓ 확인</button>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+'use strict';
+
+// ── 상태 ──────────────────────────────────────────────
+var alarms    = JSON.parse(localStorage.getItem('wake_v5') || '[]');
+var curTab    = 'all';
+var activeId  = null;
+var wData     = null;
+var airData   = null;
+var yunaVoice = null;
+
+// ── KST ───────────────────────────────────────────────
+function kst() {
+  var n = new Date();
+  return new Date(n.getTime() + (9*60 - (-n.getTimezoneOffset()))*60000);
+}
+function pad(n){ return ('0'+n).slice(-2); }
+
+// ── 시계 ──────────────────────────────────────────────
+var lastMin = '';
+function tick() {
+  var k = kst();
+  document.getElementById('clock').textContent =
+    pad(k.getHours())+':'+pad(k.getMinutes())+':'+pad(k.getSeconds());
+  var hhmm = pad(k.getHours())+':'+pad(k.getMinutes());
+  if (hhmm !== lastMin) { lastMin = hhmm; checkAlarms(k); }
+}
+setInterval(tick, 1000);
+tick();
+
+// ── 시간 기본값 ───────────────────────────────────────
+(function(){
+  var nx = new Date(kst().getTime()+60000);
+  document.getElementById('iHour').value = nx.getHours();
+  document.getElementById('iMin').value  = nx.getMinutes();
+})();
+
+// ── 이벤트 바인딩 ─────────────────────────────────────
+document.getElementById('btnNaver').addEventListener('click', function(){ window.open('https://weather.naver.com','_blank'); });
+document.getElementById('btnRef').addEventListener('click', loadAll);
+document.getElementById('btnSpkW').addEventListener('click', function(){ speak(wTxt()+' '+airTxt()); });
+document.getElementById('btnAdd').addEventListener('click', addAlarm);
+document.getElementById('btnSnz').addEventListener('click', snooze);
+document.getElementById('btnDis').addEventListener('click', dismiss);
+document.getElementById('iRepeat').addEventListener('change', function(){
+  document.getElementById('dayWrap').style.display = this.value==='custom' ? '' : 'none';
+});
+document.querySelectorAll('.day-btn').forEach(function(b){
+  b.addEventListener('click', function(){ this.classList.toggle('on'); });
+});
+document.getElementById('tab-all').addEventListener('click',  function(){ setTab('all'); });
+document.getElementById('tab-on').addEventListener('click',   function(){ setTab('on'); });
+document.getElementById('tab-done').addEventListener('click', function(){ setTab('done'); });
+
+// ── 알람 체크 ─────────────────────────────────────────
+function checkAlarms(k) {
+  var hhmm  = pad(k.getHours())+':'+pad(k.getMinutes());
+  var dow   = k.getDay();
+  var today = k.toDateString();
+  alarms.forEach(function(a){
+    if (!a.active) return;
+    if (a.time !== hhmm) return;
+    if (a.firedDate === today) return;
+    var fire = false;
+    if      (a.repeat==='none')    fire = !a.doneDate;
+    else if (a.repeat==='daily')   fire = true;
+    else if (a.repeat==='weekday') fire = dow>=1&&dow<=5;
+    else if (a.repeat==='weekend') fire = dow===0||dow===6;
+    else if (a.repeat==='custom')  fire = (a.days||[]).indexOf(dow)!==-1;
+    if (!fire) return;
+    a.firedDate = today;
+    if (a.repeat==='none'){ a.doneDate=today; a.active=false; }
+    save(); triggerAlarm(a);
+  });
+}
+
+// ── 알람 발동 ─────────────────────────────────────────
+function triggerAlarm(a) {
+  activeId = a.id;
+  document.getElementById('mTit').textContent  = a.time;
+  document.getElementById('mNote').textContent = a.note||'';
+  document.getElementById('modal').classList.add('show');
+  speak(a.note ? a.note : a.time);
+  renderList();
+}
+function dismiss() {
+  document.getElementById('modal').classList.remove('show');
+  stopSpeak(); activeId=null; renderList();
+}
+function snooze() {
+  document.getElementById('modal').classList.remove('show');
+  stopSpeak();
+  var a = alarms.find(function(x){ return x.id===activeId; });
+  if (a) {
+    var p=a.time.split(':'), h=+p[0], m=+p[1]+5;
+    if(m>=60){m-=60;h=(h+1)%24;}
+    a.time=pad(h)+':'+pad(m);
+    a.firedDate=null; a.active=true;
+    save(); renderList(); toast('😴 5분 후 다시 알립니다');
+  }
+  activeId=null;
+}
+
+// ── CRUD ──────────────────────────────────────────────
+function save(){ localStorage.setItem('wake_v5', JSON.stringify(alarms)); }
+
+function addAlarm() {
+  var note = document.getElementById('iNote').value.trim();
+  if (!note) { toast('⚠️ 메모를 입력하세요'); return; }
+  var h    = Math.min(23, Math.max(0, parseInt(document.getElementById('iHour').value,10)||0));
+  var m    = Math.min(59, Math.max(0, parseInt(document.getElementById('iMin').value,10)||0));
+  var time = pad(h)+':'+pad(m);
+  var rep  = document.getElementById('iRepeat').value;
+  var days = rep==='custom' ? (function(){
+    var r=[]; document.querySelectorAll('.day-btn.on').forEach(function(b){ r.push(+b.dataset.d); }); return r;
+  })() : [];
+  alarms.unshift({ id:Date.now(), title:note.split('\n')[0].slice(0,40),
+    note:note, time:time, repeat:rep, days:days,
+    active:true, doneDate:null, firedDate:null });
+  save(); renderList();
+  document.getElementById('iNote').value='';
+  toast('✓ 알람 추가: '+time);
+}
+function delAlarm(id){
+  alarms=alarms.filter(function(a){return a.id!==id;}); save(); renderList(); toast('🗑 삭제됐습니다');
+}
+function togActive(id){
+  var a=alarms.find(function(x){return x.id===id;});
+  if(a){a.active=!a.active;save();renderList();}
+}
+
+// ── 렌더 ──────────────────────────────────────────────
+var RMAP={'none':'1회','daily':'매일','weekday':'평일','weekend':'주말','custom':'직접'};
+var DKO=['일','월','화','수','목','금','토'];
+function setTab(t){
+  curTab=t;
+  ['all','on','done'].forEach(function(x){
+    document.getElementById('tab-'+x).classList.toggle('on',x===t);
+  });
+  document.getElementById('secTit').textContent={all:'전체 알람',on:'활성 알람',done:'완료 알람'}[t];
+  renderList();
+}
+function renderList(){
+  var list=alarms;
+  if(curTab==='on')   list=alarms.filter(function(a){return a.active&&!a.doneDate;});
+  if(curTab==='done') list=alarms.filter(function(a){return !!a.doneDate;});
+  var el=document.getElementById('alist');
+  if(!list.length){el.innerHTML='<div class="empty">🔕 알람이 없습니다</div>';return;}
+  el.innerHTML=list.map(function(a){
+    var rs=a.repeat==='custom'&&a.days&&a.days.length
+      ? a.days.slice().sort().map(function(d){return DKO[d];}).join('·')
+      : (RMAP[a.repeat]||'');
+    return '<div class="card'+(a.active?'':' off')+(a.id===activeId?' ring':'')+'" data-id="'+a.id+'">'
+      +'<div class="ctime">'+esc(a.time)+'</div>'
+      +'<div class="cbody">'
+        +'<div class="ctit">'+esc(a.title)+'</div>'
+        +'<div class="cmeta"><span class="crep">🔁 '+esc(rs)+'</span></div>'
+        +(a.note?'<div class="cnote">'+esc(a.note)+'</div>':'')
+      +'</div>'
+      +'<div class="cacts">'
+        +'<button class="bi spk" onclick="speakCard('+a.id+')">🔊</button>'
+        +'<label class="tog"><input type="checkbox"'+(a.active?' checked':'')
+          +' onchange="togActive('+a.id+')"><span class="sli2"></span></label>'
+        +'<button class="bi del" onclick="delAlarm('+a.id+')">✕</button>'
+      +'</div>'
+    +'</div>';
+  }).join('');
+}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ── TTS (Yuna 기본값) ─────────────────────────────────
+function loadVoices(){
+  if(!window.speechSynthesis) return;
+  function find(){
+    var vs=window.speechSynthesis.getVoices();
+    if(!vs.length) return;
+    var v = vs.find(function(v){ return v.voiceURI&&v.voiceURI.indexOf('ko-KR.Yuna')!==-1; })
+          || vs.find(function(v){ return /yuna/i.test(v.name); })
+          || vs.filter(function(v){ return /^ko/i.test(v.lang); })[0]
+          || null;
+    if(v) yunaVoice=v;
+  }
+  window.speechSynthesis.onvoiceschanged=find;
+  find();
+  var t=0,iv=setInterval(function(){ t++; if(yunaVoice||t>40)clearInterval(iv); else find(); },150);
+}
+
+function speak(txt){
+  if(!txt||!txt.trim()) return;
+  if(!window.speechSynthesis){toast('❌ 음성 미지원');return;}
+  window.speechSynthesis.cancel();
+  setTimeout(function(){
+    var u=new SpeechSynthesisUtterance(txt);
+    if(yunaVoice){u.voice=yunaVoice;u.lang=yunaVoice.lang;}else{u.lang='ko-KR';}
+    u.rate=0.95; u.pitch=1.1;
+    document.getElementById('spkBadge').classList.add('show');
+    u.onend=function(){document.getElementById('spkBadge').classList.remove('show');};
+    u.onerror=function(e){document.getElementById('spkBadge').classList.remove('show');toast('⚠️ '+(e.error||'음성 오류'));};
+    window.speechSynthesis.speak(u);
+  },150);
+}
+function stopSpeak(){
+  if(window.speechSynthesis) window.speechSynthesis.cancel();
+  document.getElementById('spkBadge').classList.remove('show');
+}
+function speakCard(id){
+  var a=alarms.find(function(x){return x.id===id;});
+  if(a) speak(a.note?a.note:a.time);
+}
+
+
+// ── 날씨 / 미세먼지 ──────────────────────────────────
+var WICO={0:'☀️',1:'🌤',2:'⛅',3:'☁️',45:'🌫',48:'🌫',51:'🌦',53:'🌦',55:'🌧',61:'🌧',63:'🌧',65:'🌧',71:'❄️',73:'❄️',75:'❄️',80:'🌦',81:'🌧',82:'⛈',95:'⛈',96:'⛈',99:'⛈'};
+var WDSC={0:'맑음',1:'대체로 맑음',2:'구름 조금',3:'흐림',45:'안개',48:'안개',51:'이슬비',53:'이슬비',55:'강한 이슬비',61:'약한 비',63:'비',65:'강한 비',71:'약한 눈',73:'눈',75:'강한 눈',80:'소나기',81:'소나기',82:'강한 소나기',95:'뇌우',96:'뇌우+우박',99:'강한 뇌우+우박'};
+var AQIC=[{max:50,l:'좋음',c:'good',t:'공기 맑아요.'},{max:100,l:'보통',c:'moderate',t:'민감한 분들은 주의하세요.'},{max:150,l:'민감군 주의',c:'sensitive',t:'어린이·노인은 외출을 자제하세요.'},{max:200,l:'나쁨',c:'unhealthy',t:'마스크를 꼭 착용하세요.'},{max:300,l:'매우 나쁨',c:'very-unhealthy',t:'외출을 자제하세요.'},{max:9999,l:'위험',c:'hazardous',t:'절대 외출하지 마세요.'}];
+function aqiC(n){for(var i=0;i<AQIC.length;i++)if(n<=AQIC[i].max)return AQIC[i];return AQIC[AQIC.length-1];}
+
+function loadAll(){
+  document.getElementById('wDesc').textContent='불러오는 중...';
+  document.getElementById('aqiLbl').textContent='불러오는 중...';
+  var lat=37.5665,lon=126.9780,city='서울';
+  function doLoad(){
+    fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,weather_code&timezone=Asia%2FSeoul')
+      .then(function(r){return r.json();}).then(function(d){
+        var c=d.current;
+        wData={temp:Math.round(c.temperature_2m),feels:Math.round(c.apparent_temperature),hum:c.relative_humidity_2m,wind:c.wind_speed_10m.toFixed(1),code:c.weather_code,city:city};
+        document.getElementById('wIcon').textContent=WICO[c.weather_code]||'🌡';
+        document.getElementById('wTemp').textContent=wData.temp+'°';
+        document.getElementById('wDesc').textContent=WDSC[c.weather_code]||'알 수 없음';
+        document.getElementById('wHum').textContent=c.relative_humidity_2m+'%';
+        document.getElementById('wFeel').textContent=wData.feels+'°';
+        document.getElementById('wWind').textContent=wData.wind+'m/s';
+        document.getElementById('wCity').textContent=city;
+      }).catch(function(){document.getElementById('wDesc').textContent='로드 실패';});
+    fetch('https://api.waqi.info/feed/geo:'+lat+';'+lon+'/?token=demo')
+      .then(function(r){return r.json();}).then(function(j){
+        if(j.status!=='ok'){document.getElementById('aqiLbl').textContent='데이터 없음';return;}
+        var d=j.data,cfg=aqiC(d.aqi);
+        airData={aqi:d.aqi,pm25:d.iaqi&&d.iaqi.pm25?d.iaqi.pm25.v:'--',pm10:d.iaqi&&d.iaqi.pm10?d.iaqi.pm10.v:'--',o3:d.iaqi&&d.iaqi.o3?d.iaqi.o3.v:'--',no2:d.iaqi&&d.iaqi.no2?d.iaqi.no2.v:'--',cfg:cfg};
+        var nb=document.getElementById('aqiNum'); nb.textContent=d.aqi; nb.className='aqi '+cfg.c;
+        document.getElementById('aqiLbl').textContent=cfg.l;
+        document.getElementById('aPm25').textContent=airData.pm25;
+        document.getElementById('aPm10').textContent=airData.pm10;
+        document.getElementById('aO3').textContent=airData.o3;
+        document.getElementById('aNO2').textContent=airData.no2;
+      }).catch(function(){document.getElementById('aqiLbl').textContent='로드 실패';});
+  }
+  fetch('https://ipapi.co/json/').then(function(r){return r.json();}).then(function(d){
+    if(d.latitude){lat=d.latitude;lon=d.longitude;city=d.city||d.region||'현재위치';}
+    doLoad();
+  }).catch(doLoad);
+}
+
+function wTxt(){
+  if(!wData) return '날씨 정보 없음.';
+  var d=WDSC[wData.code]||'알 수 없음',t='오늘도 좋은 하루 되세요.';
+  if([51,53,55,61,63,65,80,81,82].indexOf(wData.code)!==-1) t='우산을 챙기세요.';
+  else if(wData.temp<=0) t='매우 춥습니다.';
+  else if(wData.temp>=30) t='매우 덥습니다.';
+  return wData.city+' 날씨 '+d+', 기온 '+wData.temp+'도. '+t;
+}
+function airTxt(){
+  if(!airData) return '미세먼지 정보 없음.';
+  return '대기질 지수 '+airData.aqi+', '+airData.cfg.l+'. PM2.5 '+airData.pm25+'. '+airData.cfg.t;
+}
+
+// ── 토스트 ────────────────────────────────────────────
+function toast(msg){
+  var el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  setTimeout(function(){el.classList.remove('show');},2800);
+}
+
+// ── 서비스워커 완전 제거 (캐시 초기화) ──────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(function(regs) {
+    regs.forEach(function(reg){ reg.unregister(); });
+  });
+  caches.keys().then(function(keys){
+    keys.forEach(function(k){ caches.delete(k); });
+  });
+}
+
+// ── 모바일 음성 초기화 (사용자 제스처 필요) ──────────
+// iOS Safari는 반드시 사용자 터치 이후에 AudioContext/TTS 가능
+var ttsUnlocked = false;
+function unlockTTS() {
+  if (ttsUnlocked) return;
+  ttsUnlocked = true;
+  if (window.speechSynthesis) {
+    // 빈 발화로 TTS 엔진 깨우기
+    var u = new SpeechSynthesisUtterance('');
+    window.speechSynthesis.speak(u);
+    // 음성 목록 재로드
+    loadVoices();
+  }
+}
+document.addEventListener('touchstart', unlockTTS, { once: true });
+document.addEventListener('click',      unlockTTS, { once: true });
+
+loadVoices();
+loadAll();
+renderList();
+</script>
+</body>
+</html>
